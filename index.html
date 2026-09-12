@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#04070f" />
+  <title>GPU DESCENT — Into the Silicon | GPU 디센트: 실리콘 속으로</title>
+  <meta name="description" content="Explore inside a real NVIDIA GPU, level by level: board → package → die → GPC → SM → CUDA core → transistor → silicon atoms. Every fact from whitepapers and papers. 실제 NVIDIA GPU 내부를 층층이 탐험하는 3D 게임." />
+  <meta property="og:title" content="GPU DESCENT — What's inside a GPU?" />
+  <meta property="og:description" content="Shrink into an NVIDIA H100 and walk down 14 levels to the silicon atoms. Real structure, real numbers." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect x=%2710%27 y=%2710%27 width=%2780%27 height=%2780%27 rx=%278%27 fill=%27%2376b900%27/%3E%3Crect x=%2730%27 y=%2730%27 width=%2740%27 height=%2740%27 fill=%27%23111%27/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="./src/style.css?v=20260913002818" />
+</head>
+<body>
+  <div id="app"></div>
+  <div id="rotate-hint"><div>📱↻</div><div data-i18n="mobile.rotate">가로 화면으로 돌려주세요</div></div>
+  <div id="error-banner" class="hidden"></div>
+
+  <!-- 언어 선택 -->
+  <div id="lang-bar"><label><span data-i18n="lang.label">언어</span> <select id="lang-select"><option value="ko">한국어</option><option value="en">English</option></select></label></div>
+
+  <!-- 타이틀 -->
+  <div id="title-screen" class="screen">
+    <div class="title-box">
+      <div class="title-sub" data-i18n="title.sub">INTO THE SILICON</div>
+      <h1 class="title-main" data-i18n="title.main">GPU 디센트</h1>
+      <p class="title-desc" data-i18n="title.desc">"GPU 안에는 뭐가 있어?" — AI 신 아스트라가 당신을 원자 크기로 줄여 NVIDIA GPU 속으로 던져 넣는다. 보드에서 다이로, 마을 같은 SM에서 벽돌 같은 트랜지스터로, 실리콘 원자의 바닥까지. 실제 구조, 실제 숫자.</p>
+      <button id="btn-start" class="btn-primary" data-i18n="title.start">탐험 시작</button>
+      <div class="jet-banner">
+        <div class="jb-key"><kbd class="big">F</kbd><span class="jb-hold" data-i18n="keys.hold">누르고 있기</span></div>
+        <div class="jb-text">
+          <div class="jb-head">🚀 <span data-i18n="jet.head">제트팩으로 공중부양</span></div>
+          <div class="jb-body" data-i18n="jet.body">F 키를 <b>누르고 있으면</b> 등에 멘 제트팩이 불을 뿜고, 몸이 공중으로 떠오릅니다. 계단으로 오르기 힘든 높은 구조물도 그대로 날아서 넘어갈 수 있습니다. 연료는 화면 왼쪽 위 게이지에 표시되며, 땅에 내려서면 빠르게 다시 채워집니다.</div>
+        </div>
+      </div>
+      <div class="title-hint">
+        <span class="kg"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><i data-i18n="hint.move">이동</i></span>
+        <span class="kg"><kbd>🖱</kbd><i data-i18n="hint.look">시점 돌리기</i></span>
+        <span class="kg"><kbd>SPACE</kbd><i data-i18n="hint.jump">점프</i></span>
+        <span class="kg"><kbd>SHIFT</kbd><i data-i18n="hint.run">달리기</i></span>
+        <span class="kg"><kbd>SHIFT</kbd><kbd>SPACE</kbd><i data-i18n="hint.slide">슬라이딩 (달리는 중)</i></span>
+        <span class="kg hot"><kbd>F</kbd><i data-i18n="hint.jet">제트팩 공중부양</i></span>
+        <span class="kg"><kbd>X</kbd><i data-i18n="hint.x">기어가기</i></span>
+        <span class="kg"><kbd>Q</kbd><i data-i18n="hint.q">대시</i></span>
+        <span class="kg"><kbd>B</kbd><i data-i18n="hint.b">스케이트보드</i></span>
+        <span class="kg"><kbd>R</kbd><i data-i18n="hint.r">발사 (ECC 정정)</i></span>
+        <span class="kg"><kbd>Z</kbd><i data-i18n="hint.z">주먹</i></span><span class="kg"><kbd>G</kbd><i data-i18n="hint.g">미사일 (게이지를 크게 깎는다)</i></span>
+        <span class="kg"><kbd>P</kbd><i data-i18n="hint.p">오토 모드</i></span>
+        <span class="kg"><kbd>E</kbd><i data-i18n="hint.e">상호작용 · 게이트</i></span>
+        <span class="kg"><kbd>C</kbd><i data-i18n="hint.c">시점 전환</i></span>
+        <span class="kg"><kbd>TAB</kbd><i data-i18n="hint.tab">도감</i></span>
+        <span class="kg"><kbd>M</kbd><i data-i18n="hint.m">음악</i></span>
+        <span class="kg"><kbd>V</kbd><i data-i18n="hint.v">관련 영상</i></span>
+        <span class="kg"><kbd>H</kbd><i data-i18n="hint.h">전체 조작 보기</i></span>
+      </div>
+      <div class="title-tips">
+        <span data-i18n="tip.card">📇 구조물을 지나면 <b>용어 카드</b></span><span data-i18n="tip.gate">🌀 게이트에서 <b>×10~×100 축소</b></span><span data-i18n="tip.packet">📦 카메라 프레임 하나의 <b>여행</b>을 따라가라</span><span data-i18n="tip.villain">⚠ 빌런은 <b>R 사격</b>과 <b>G 미사일</b>로 게이지를 깎아 퇴치</span><span data-i18n="tip.monster">👹 <b>괴물</b>은 걸어서 쫓아온다 — Z 주먹이 총보다 아프다</span><span data-i18n="tip.score">🏆 사람·용어·코인·트릭으로 <b>점수</b>를 모아라</span><span data-i18n="tip.fact">📚 모든 수치는 <b>화이트페이퍼·논문</b> 출처</span><span data-i18n="tip.people">🧑‍🔬 <b>실존 인물</b>을 만나 클릭하면 영상</span><span data-i18n="tip.click">🖱 구조물·간판을 <b>클릭</b>하면 실제 사진·영상·회사 정보</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 캐릭터 / GPU / 모드 선택 -->
+  <div id="select-screen" class="screen hidden">
+    <h2 class="select-title" data-i18n="select.title">탐험가를 선택하세요</h2>
+    <div id="char-cards" class="char-cards"></div>
+    <div class="select-bottom">
+      <div class="option-row">
+        <label><span data-i18n="select.theme">테마</span>
+          <select id="opt-theme">
+            <option value="gpu" data-i18n="select.themeGpu">GPU 디센트 (공장 → GPU 내부)</option>
+            <option value="ai" data-i18n="select.themeAi">AI 모델 경쟁 (알파고 → LLM)</option>
+          </select>
+        </label>
+        <label><span data-i18n="select.gpu">GPU</span> <select id="opt-gpu"></select></label>
+        <label><span data-i18n="select.mode">시작</span>
+          <select id="opt-mode">
+            <option value="prologue" data-i18n="select.modePrologue">프롤로그(공장 시찰)부터</option>
+            <option value="descent" data-i18n="select.modeDescent">바로 GPU 속으로</option>
+          </select>
+        </label>
+        <label class="chk"><input id="opt-auto" type="checkbox"> <span data-i18n="select.auto">오토 모드 (자동 탐험)</span></label>
+        <label><span data-i18n="select.view">시점</span>
+          <select id="opt-view">
+            <option value="third" data-i18n="select.viewThird">3인칭</option>
+            <option value="first" data-i18n="select.viewFirst">1인칭</option>
+          </select>
+        </label>
+      </div>
+      <div id="gpu-summary" class="gpu-summary"></div>
+      <div class="btn-row">
+        <button id="btn-back" class="btn-secondary" data-i18n="select.back">뒤로</button>
+        <button id="btn-go" class="btn-primary" data-i18n="select.go">축소 시작</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 게임 HUD -->
+  <div id="hud" class="hidden">
+    <div id="level-title" class="level-title hidden"><div class="lt-depth"></div><div class="lt-en"></div><div class="lt-ko"></div><div class="lt-scale"></div></div>
+    <div id="narration" class="narration hidden"><span class="nar-who">ASTRA</span><span class="nar-text"></span></div>
+    <div id="term-card" class="term-card hidden">
+      <div class="tc-head"><span class="tc-ko"></span><span class="tc-src"></span></div>
+      <div class="tc-en"></div>
+      <div class="tc-easy"><span class="tc-tag" data-i18n="term.easy">쉽게 말하면</span><span class="tc-easy-text"></span></div>
+      <div class="tc-analogy"></div>
+      <details class="tc-more"><summary data-i18n="term.more">자세히 보기</summary><div class="tc-desc"></div></details>
+      <div class="tc-fact"></div>
+      <div class="tc-video"></div>
+    </div>
+    <button id="auto-btn" type="button" title="자동 탐험"><span class="ab-icon">🤖</span><span class="ab-text" data-i18n="auto.btn">오토</span></button>
+    <div id="knowledge" class="hidden"><div class="kn-head">💡 <span data-i18n="coin.learned">방금 배운 것</span></div><div class="kn-text"></div></div>
+    <div id="villain-hud" class="hidden"></div>
+    <!-- 20260913 jwjeong 미사일 재장전 게이지. 꽉 차면 G 로 쏠 수 있다는 뜻이다. -->
+    <div id="missile-hud" class="hidden"><span class="ms-label" data-i18n="missile.ready">🚀 미사일 준비</span><div class="ms-bar"><div class="ms-fill"></div></div><span class="ms-key">G</span></div>
+    <div id="hurt-flash"></div>
+    <div id="kill-cel" class="hidden">
+      <div class="kc-burst"></div>
+      <div class="kc-title" data-i18n="cel.title">ECC CORRECTED!</div>
+      <div class="kc-sub" data-i18n="cel.sub">뒤집힌 비트를 되돌렸다</div>
+      <div class="kc-score"></div>
+    </div>
+    <div id="score-hud">
+      <div id="timer-hud"><span id="timer-now">0:00</span><span id="timer-par"></span></div>
+      <div class="sc-row"><span class="sc-label" data-i18n="score.label">SCORE</span><span id="score-value">0</span></div>
+      <div class="sc-row small"><span class="sc-label" data-i18n="score.best">BEST</span><span id="score-best">0</span></div>
+      <div id="combo" class="hidden"><span class="combo-x">×1.0</span><span class="combo-n"></span><div class="combo-bar"></div></div>
+      <div id="score-pops"></div>
+    </div>
+    <div id="hud-top-left">
+      <div id="hud-level"></div>
+      <div id="hud-scale"></div>
+      <div id="hud-terms"></div>
+      <div id="hud-coins"></div>
+      <div id="fuel-wrap" class="hidden"><div class="fuel-label" data-i18n="hud.fuel">🚀 제트팩 연료 · F 누르고 있기</div><div class="fuel-track"><div id="fuel-bar"></div></div></div>
+    </div>
+    <div id="hud-top-right">
+      <div id="hud-objective"></div>
+    </div>
+    <div id="minimap"><canvas id="minimap-canvas" width="180" height="180"></canvas></div>
+    <div id="interact-prompt" class="hidden"><kbd>E</kbd> <span></span></div>
+    <div id="jet-tip" class="hidden"><kbd class="big">F</kbd><span data-i18n="jet.air">키를 누르고 있으면 제트팩으로 떠오릅니다</span></div>
+    <div id="key-bar">
+      <span class="kg"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><i data-i18n="hint.move">이동</i></span>
+      <span class="kg"><kbd>SHIFT</kbd><i data-i18n="hint.run">달리기</i></span>
+      <span class="kg"><kbd>SPACE</kbd><i data-i18n="hint.jump">점프</i></span>
+      <span class="kg hot"><kbd>F</kbd><i data-i18n="hint.jet">제트팩 공중부양</i></span>
+      <span class="kg"><kbd>E</kbd><i data-i18n="hint.e">상호작용 · 게이트</i></span>
+      <span class="kg"><kbd>TAB</kbd><i data-i18n="hint.tab">도감</i></span>
+      <span class="kg dim"><kbd>H</kbd><i data-i18n="keys.open">전체 조작</i></span>
+    </div>
+    <div id="collected-terms"></div>
+    <div id="depth-meter"><div class="dm-track"><div class="dm-fill"></div></div><div class="dm-label"></div></div>
+    <div id="touch-controls" class="hidden">
+      <div id="joy-zone"><div id="joy-base"><div id="joy-knob"></div></div></div>
+      <div id="turn-pad"><button id="tb-left" aria-label="left">◀</button><button id="tb-right" aria-label="right">▶</button></div>
+      <div id="touch-buttons"><button id="tb-run" class="tb-wide">🏃</button><button id="tb-jump">▲</button><button id="tb-jet" class="tb-jet">🚀<em>JET</em></button><button id="tb-fire">🔫</button><button id="tb-missile">🚀<em>MSL</em></button><button id="tb-punch">👊</button><button id="tb-b">🛹</button><button id="tb-x">⬇</button><button id="tb-e">E</button><button id="tb-c">C</button><button id="tb-tab">📖</button></div>
+    </div>
+  </div>
+
+  <!-- 전체 조작 안내 (H) -->
+  <div id="keys-panel" class="hidden">
+    <div class="kp-box">
+      <div class="kp-head"><h2 data-i18n="keys.title">조작 방법</h2><button id="keys-close" type="button" data-i18n="keys.close">닫기 (H)</button></div>
+      <div class="jet-banner">
+        <div class="jb-key"><kbd class="big">F</kbd><span class="jb-hold" data-i18n="keys.hold">누르고 있기</span></div>
+        <div class="jb-text">
+          <div class="jb-head">🚀 <span data-i18n="jet.head">제트팩으로 공중부양</span></div>
+          <div class="jb-body" data-i18n="jet.body">F 키를 <b>누르고 있으면</b> 등에 멘 제트팩이 불을 뿜고, 몸이 공중으로 떠오릅니다. 계단으로 오르기 힘든 높은 구조물도 그대로 날아서 넘어갈 수 있습니다. 연료는 화면 왼쪽 위 게이지에 표시되며, 땅에 내려서면 빠르게 다시 채워집니다.</div>
+        </div>
+      </div>
+      <div class="kp-cols">
+        <div class="kp-col">
+          <h3 data-i18n="keys.move">이동 · 시점</h3>
+          <div class="kp-row"><span class="kp-k"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><i data-i18n="hint.move">이동</i></div>
+          <div class="kp-row"><span class="kp-k"><kbd>🖱</kbd></span><i data-i18n="hint.look">시점 돌리기</i></div>
+          <div class="kp-row"><span class="kp-k"><kbd>SHIFT</kbd></span><i data-i18n="hint.run">달리기</i></div>
+          <div class="kp-row"><span class="kp-k"><kbd>SPACE</kbd></span><i data-i18n="hint.jump">점프</i></div>
+          <div class="kp-row"><span class="kp-k"><kbd>C</kbd></span><i data-i18n="hint.c">시점 전환</i></div>
+        </div>
+        <div class="kp-col">
+          <h3 data-i18n="keys.action">동작</h3>
+          <div class="kp-row hot"><span class="kp-k"><kbd>F</kbd></span><i data-i18n="hint.jet">제트팩 공중부양</i></div>
+          <div class="kp-row"><span class="kp-k"><kbd>SHIFT</kbd><kbd>SPACE</kbd></span><i data-i18n="hint.slide">슬라이딩 (달리는 중)</i></div>
+          <div class="kp-row"><span class="kp-k"><kbd>Q</kbd></span><i data-i18n="hint.q">대시</i></div>
+          <div class="kp-row"><span class="kp-k"><kbd>X</kbd></span><i data-i18n="hint.x">기어가기</i></div>
+          <div class="kp-row"><span class="kp-k"><kbd>B</kbd></span><i data-i18n="hint.b">스케이트보드</i></div>
+          <div class="kp-row"><span class="kp-k"><kbd>R</kbd></span><i data-i18n="hint.r">발사 (ECC 정정)</i></div>
+          <div class="kp-row"><span class="kp-k"><kbd>Z</kbd></span><i data-i18n="hint.z">주먹</i></div>
+          <div class="kp-row"><span class="kp-k"><kbd>G</kbd></span><i data-i18n="hint.g">미사일 (게이지를 크게 깎는다)</i></div>
+        </div>
+        <div class="kp-col">
+          <h3 data-i18n="keys.system">게임 · 화면</h3>
+          <div class="kp-row"><span class="kp-k"><kbd>E</kbd></span><i data-i18n="hint.e">상호작용 · 게이트</i></div>
+          <div class="kp-row"><span class="kp-k"><kbd>TAB</kbd></span><i data-i18n="hint.tab">도감</i></div>
+          <div class="kp-row"><span class="kp-k"><kbd>V</kbd></span><i data-i18n="hint.v">관련 영상</i></div>
+          <div class="kp-row"><span class="kp-k"><kbd>M</kbd></span><i data-i18n="hint.m">음악</i></div>
+          <div class="kp-row"><span class="kp-k"><kbd>P</kbd></span><i data-i18n="hint.p">오토 모드</i></div>
+          <div class="kp-row"><span class="kp-k"><kbd>H</kbd></span><i data-i18n="hint.h">전체 조작 보기</i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 도감 -->
+  <div id="codex" class="screen hidden">
+    <div class="codex-box">
+      <div class="codex-head"><h2 data-i18n="codex.title">도감 · Codex</h2><button id="codex-close" class="btn-secondary small" data-i18n="codex.close">닫기 (TAB)</button></div>
+      <div class="codex-tabs"><button class="ct active" data-tab="terms" data-i18n="codex.terms">용어 카드</button><button class="ct" data-tab="levels" data-i18n="codex.levels">층 지도</button><button class="ct" data-tab="people" data-i18n="codex.people">인물</button><button class="ct" data-tab="sources" data-i18n="codex.sources">출처</button></div>
+      <div id="codex-body"></div>
+    </div>
+  </div>
+
+  <!-- 게이트 전환 오버레이 -->
+  <div id="shrink-overlay" class="hidden"><div class="shrink-text"></div><div class="shrink-factor"></div></div>
+
+  <!-- 엔딩 -->
+  <div id="ending-screen" class="screen hidden">
+    <div class="ending-box">
+      <div class="title-sub" data-i18n="ending.sub">THE FLOOR</div>
+      <h2 data-i18n="ending.title">바닥에 도착했다</h2>
+      <div id="ending-rank" class="rank-badge"></div>
+      <div id="ending-final" class="final-score"></div>
+      <div id="ending-stats"></div>
+      <div id="ending-quote" class="ending-quote"></div>
+      <div class="btn-row"><button id="btn-share" class="btn-secondary" data-i18n="ending.share">결과 카드 저장</button><button id="btn-again" class="btn-primary" data-i18n="ending.again">다시 탐험</button></div>
+      <canvas id="share-canvas" width="1200" height="630" class="hidden"></canvas>
+    </div>
+  </div>
+
+
+  <!-- 영상 모달 (인물·용어 관련 유튜브) -->
+  <div id="video-modal" class="hidden">
+    <div class="vm-box">
+      <div class="vm-head"><div class="vm-title"></div><button id="vm-close" type="button">✕</button></div>
+      <div class="vm-frame"><iframe id="vm-iframe" src="about:blank" title="video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+      <div class="vm-photos"></div>
+      <div class="vm-meta"></div>
+      <div class="vm-links"></div>
+      <div class="vm-list"></div>
+      <div class="vm-note" data-i18n="video.note">영어 영상입니다. 유튜브 자막(CC) 버튼에서 한국어 자동 번역을 켤 수 있습니다.</div>
+    </div>
+  </div>
+
+  <!-- 음악 플레이리스트 위젯 (우측 상단) -->
+  <div id="music-widget" class="hidden">
+    <button id="music-toggle" type="button">♪ <span id="music-cur">…</span> <span class="caret">▾</span></button>
+    <div id="music-list" class="hidden">
+      <div class="ml-head" data-i18n="music.playlist">플레이리스트 · 누르면 그 곡을 재생</div>
+      <ul id="music-items"></ul>
+      <button id="music-auto" type="button" data-i18n="music.auto">🔄 층에 맞춰 자동 전환</button>
+    </div>
+  </div>
+
+  <!-- 자동재생이 막혔을 때: 아무 곳이나 누르면 음악 시작 -->
+  <div id="enter-gate" class="hidden">
+    <div class="gate-box">
+      <div class="gate-icon">🎧</div>
+      <div class="gate-title" data-i18n="gate.title">GPU 디센트</div>
+      <div class="gate-text" data-i18n="gate.text">🔊 화면을 한 번 누르면 메인 테마와 함께 시작합니다</div>
+    </div>
+  </div>
+
+  <!-- 상단 메뉴 -->
+  <div id="top-menu" class="hidden">
+    <button id="menu-toggle" type="button">☰</button>
+    <div id="top-menu-list" class="hidden">
+      <div class="ml-head" data-i18n="menu.jump">🧭 층으로 이동</div>
+      <ul id="menu-levels"></ul>
+      <button id="menu-select" type="button" data-i18n="menu.select">👤 탐험가 선택으로</button>
+      <button id="menu-home" type="button" data-i18n="menu.home">🏠 메인으로</button>
+    </div>
+  </div>
+
+  <script>
+    window.showLoadError = function (msg) { var b = document.getElementById('error-banner'); if (!b) return; b.textContent = msg; b.classList.remove('hidden'); };
+    window.addEventListener('error', function (e) { if (e && e.message) window.showLoadError('오류: ' + e.message); });
+    (function () {
+      var ua = navigator.userAgent || '';
+      var touch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+      var mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || (touch && Math.min(screen.width, screen.height) < 900);
+      document.documentElement.classList.toggle('is-mobile', mobile);
+      if (mobile) { function upd() { document.documentElement.classList.toggle('portrait', window.innerHeight > window.innerWidth); } upd(); window.addEventListener('resize', upd); window.addEventListener('orientationchange', function () { setTimeout(upd, 200); }); }
+    })();
+  </script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="./src/main.js?v=20260913002818" onerror="window.showLoadError('main.js 또는 three.js 모듈을 불러오지 못했습니다. http:// 서버로 열었는지, 인터넷이 연결되어 있는지 확인하세요.')"></script>
+</body>
+</html>
